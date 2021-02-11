@@ -96,13 +96,10 @@ export class PostsService extends DocumentTranslationsService {
       if (imageFile && isFile(imageFile)) {
         const imageName = guid() + '.' + imageFile.name.split('.').pop();
         const imagePath = `posts/${id}/${imageName}`;
-        // const ref = this.storage.ref(path);
-        // finalize( async() =>  {
-        // this.downloadURL = await ref.getDownloadURL().pipe(take(1)).toPromise();
-        this.storage.upload(imagePath, imageFile).then(() => {
-          this.db.setDocument('posts', id, { image: imagePath}).then(() => {
-
-          // this.db.setDocument('posts', id, { image: imagePath, downloadURL: this.downloadURL }).then(() => {
+        this.storage.upload(imagePath, imageFile).then(async () => {
+          const ref = this.storage.get(imagePath);
+          const downloadURL = await ref.getDownloadURL().pipe(take(1)).toPromise();
+          this.db.setDocument('posts', id, { image: imagePath, downloadURL: downloadURL }).then(() => {
             resolve();
           }).catch((error: Error) => {
             reject(error);
